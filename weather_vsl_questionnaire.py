@@ -112,6 +112,9 @@ def show_section(section_num):
         if st.session_state.responses['follow_up'] == 'Yes':
             st.session_state.responses['email'] = st.text_input("Enter email")
 
+# ---- Call Function to Render Section ----
+show_section(st.session_state.current_section)
+
 # ---- Submit Button ----
 if st.session_state.current_section == len(SECTIONS) - 1:
     if st.button("Submit"):
