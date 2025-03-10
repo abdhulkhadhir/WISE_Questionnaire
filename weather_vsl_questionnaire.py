@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import base64
+import logging
 from github import Github
 
 # ---- Streamlit Page Config ----
@@ -117,19 +118,29 @@ show_section(st.session_state.current_section)
 
 # ---- Save Responses to GitHub ----
 def save_to_github(df):
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(REPO_NAME)
-    
     try:
-        # Check if the file exists
-        file = repo.get_contents(CSV_PATH)
-        # If file exists, update it
-        repo.update_file(file.path, "Update VSL responses file", df.to_csv(index=False), file.sha)
-        print("File updated successfully")
-    except:
-        # If the file doesn't exist, create it
-        repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
-        print("File created successfully")
+        # Set up logging
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+        # Authenticate with GitHub
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+
+        # Convert DataFrame to CSV string
+        file_content = df.to_csv(index=False)
+
+        # Check if file exists
+        try:
+            file = repo.get_contents(CSV_PATH)  # This will throw an error if the file doesn't exist
+            repo.update_file(CSV_PATH, "Update VSL responses file", file_content, file.sha)
+            logging.info("File updated successfully")
+        except Exception as e:
+            # If the file does not exist, create it
+            repo.create_file(CSV_PATH, "Create VSL responses file", file_content)
+            logging.info("File created successfully")
+
+    except Exception as e:
+        logging.error(f"Error in save_to_github function: {e}")
 
 # ---- Navigation Buttons ----
 if st.session_state.current_section > 0:
