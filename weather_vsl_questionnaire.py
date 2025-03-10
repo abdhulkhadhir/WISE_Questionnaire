@@ -115,6 +115,12 @@ def show_section(section_num):
 # ---- Call Function to Render Section ----
 show_section(st.session_state.current_section)
 
+# ---- Save Responses to GitHub ----
+def save_to_github(df):
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(REPO_NAME)
+    repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
+
 # ---- Navigation Buttons ----
 if st.session_state.current_section > 0:
     if st.button("Previous"):
@@ -127,4 +133,6 @@ if st.session_state.current_section < len(SECTIONS) - 1:
         st.rerun()
 else:
     if st.button("Submit"):
+        df = pd.DataFrame([st.session_state.responses])
+        save_to_github(df)
         st.success("Responses saved successfully!")
