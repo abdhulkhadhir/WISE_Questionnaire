@@ -56,9 +56,20 @@ def show_section(section_num):
         st.session_state.responses['org_type'] = st.selectbox("**3. Organization type**", ['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'])
 
     elif section_num == 1:  # System Design
-        st.session_state.responses['vsl_types'] = st.multiselect("**4. Types of VSL systems managed**", ['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'])
+        vsl_selection = st.multiselect("**4. Types of VSL systems managed**", ['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'])
+        st.session_state.responses['vsl_types'] = vsl_selection
+        if 'Other' in vsl_selection:
+            st.session_state.responses['vsl_other'] = st.text_input("Specify other VSL type")
+
         st.session_state.responses['weather_params'] = st.multiselect("**5. Primary weather parameters triggering adjustments**", ['Rainfall intensity', 'Snow accumulation', 'Pavement friction', 'Visibility', 'Wind speed', 'Humidity', 'Other'])
-        st.session_state.responses['data_sources'] = st.text_area("**6. Rank data sources used for weather inputs (1=Most Critical, 5=Least)**", "RWIS/roadside sensors, Connected vehicle telematics, Radar/satellite forecasts, Thermal cameras, Manual operator reports")
+
+        st.markdown("**6. Rate the importance of data sources (1=Least Important, 5=Most Important)**")
+        st.session_state.responses['rw_sensors'] = st.slider("RWIS/roadside sensors", 1, 5)
+        st.session_state.responses['vehicle_telematics'] = st.slider("Connected vehicle telematics", 1, 5)
+        st.session_state.responses['sat_forecasts'] = st.slider("Radar/satellite forecasts", 1, 5)
+        st.session_state.responses['thermal_cameras'] = st.slider("Thermal cameras", 1, 5)
+        st.session_state.responses['manual_reports'] = st.slider("Manual operator reports", 1, 5)
+
         st.session_state.responses['control_logic'] = st.radio("**7. Control logic architecture**", ['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'])
         if st.session_state.responses['control_logic'] == 'Rule-based thresholds (fixed)':
             st.session_state.responses['rule_based_thresholds'] = st.radio("**Threshold determination method**", ['Historical crash data', 'Regulatory guidelines', 'Trial-and-error', 'Other'])
@@ -76,6 +87,7 @@ def show_section(section_num):
         st.session_state.responses['safety_improvement'] = st.slider("**11. Crash reduction (%)**", 0, 100)
         st.session_state.responses['safety_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
         st.session_state.responses['speed_compliance'] = st.slider("**12. Speed compliance rate (%)**", 0, 100)
+        st.session_state.responses['speed_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
 
     elif section_num == 4:  # Lessons Learned
         st.session_state.responses['success_story'] = st.text_area("**13. Success story (Max 200 words)**")
@@ -89,7 +101,10 @@ def show_section(section_num):
         st.session_state.responses['road_maintenance'] = st.radio("Road maintenance teams", ['Daily', 'Weekly', 'Monthly', 'Never'])
 
     elif section_num == 6:  # Future Directions
-        st.session_state.responses['emerging_tech'] = st.text_area("**18. Rank emerging technologies (1=Most important, 4=Least)**", "AI/ML prediction models, Satellite-connected IoT sensors, Connected vehicle integration")
+        st.markdown("**18. Rank emerging technologies (1=Most Important, 4=Least Important)**")
+        st.session_state.responses['ai_ml'] = st.slider("AI/ML prediction models", 1, 4)
+        st.session_state.responses['iot_sensors'] = st.slider("Satellite-connected IoT sensors", 1, 4)
+        st.session_state.responses['cv_integration'] = st.slider("Connected vehicle integration", 1, 4)
         st.session_state.responses['research_gaps'] = st.text_area("**19. Research gaps hindering WRVSL advancements (100 words max)**")
 
     elif section_num == 7:  # Optional Demographics
@@ -97,20 +112,7 @@ def show_section(section_num):
         if st.session_state.responses['follow_up'] == 'Yes':
             st.session_state.responses['email'] = st.text_input("Enter email")
 
-# ---- Save Responses to GitHub ----
-def save_to_github(df):
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(REPO_NAME)
-    repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
-
-# ---- Navigation ----
-show_section(st.session_state.current_section)
-
-if st.button("Next Section →"):
-    st.session_state.current_section += 1
-    st.rerun()
-
-if st.session_state.current_section == len(SECTIONS) - 1 and st.button("Submit"):
-    df = pd.DataFrame([st.session_state.responses])
-    save_to_github(df)
-    st.success("Responses saved successfully!")
+# ---- Submit Button ----
+if st.session_state.current_section == len(SECTIONS) - 1:
+    if st.button("Submit"):
+        st.success("Responses saved successfully!")
