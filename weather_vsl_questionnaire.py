@@ -115,7 +115,16 @@ def show_section(section_num):
 # ---- Call Function to Render Section ----
 show_section(st.session_state.current_section)
 
-# ---- Submit Button ----
-if st.session_state.current_section == len(SECTIONS) - 1:
+# ---- Navigation Buttons ----
+if st.session_state.current_section > 0:
+    if st.button("Previous"):
+        st.session_state.current_section -= 1
+        st.rerun()
+
+if st.session_state.current_section < len(SECTIONS) - 1:
+    if st.button("Next"):
+        st.session_state.current_section += 1
+        st.rerun()
+else:
     if st.button("Submit"):
         st.success("Responses saved successfully!")
