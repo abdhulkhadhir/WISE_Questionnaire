@@ -1,36 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 10 12:23:30 2025
-
-@author: seyedhyd
-"""
-
 import streamlit as st
 import pandas as pd
 import json
-from datetime import datetime
 import base64
 from github import Github
-import os
 
-# Initialize session state
-if 'current_section' not in st.session_state:
-    st.session_state.current_section = 0
-if 'responses' not in st.session_state:
-    st.session_state.responses = {}
-if 'submitted' not in st.session_state:
-    st.session_state.submitted = False
+# ---- Streamlit Page Config ----
+st.set_page_config(page_title="Global VSL Survey", layout="wide")
 
-# Configure GitHub integration
-if "GITHUB_TOKEN" not in st.secrets:
-    st.error("GitHub token is missing. Please configure `st.secrets`.")
-    st.stop()
-
+# ---- GitHub Configuration ----
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO_NAME = "abdhulkhadhir/qd_visualiser"
 CSV_PATH = "responses.csv"
 
-# Section configurations
+# ---- Define Survey Sections ----
 SECTIONS = [
     "Participant Context",
     "System Design",
@@ -39,171 +21,96 @@ SECTIONS = [
     "Lessons Learned",
     "Policy & Governance",
     "Future Directions",
-    "Demographics"
+    "Optional Demographics"
 ]
 
-# Progress bar
-progress = st.session_state.current_section / (len(SECTIONS)-1)
+# ---- Initialize Session State ----
+if 'current_section' not in st.session_state:
+    st.session_state.current_section = 0
+if 'responses' not in st.session_state:
+    st.session_state.responses = {}
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
-# Tooltips
-TOOLTIPS = {
-    "control_logic": "Control logic refers to the algorithmic approach used to determine speed limits",
-    "rwis": "Road Weather Information System (RWIS) uses roadside sensors to monitor conditions",
-    "mucd": "Manual on Uniform Traffic Control Devices (MUTCD) - US regulatory framework"
-}
+# ---- Sidebar Navigation ----
+st.sidebar.title("📋 Survey Progress")
+progress = (st.session_state.current_section + 1) / len(SECTIONS)
+st.sidebar.progress(progress)
 
+for i, section in enumerate(SECTIONS):
+    if i == st.session_state.current_section:
+        st.sidebar.markdown(f"➡️ **{section}**")
+    else:
+        if st.sidebar.button(section):
+            st.session_state.current_section = i
+            st.rerun()
+
+# ---- Function to Render Sections ----
 def show_section(section_num):
+    """Renders the current survey section."""
     st.markdown(f"## {SECTIONS[section_num]}")
-    
+
     if section_num == 0:  # Participant Context
-        with st.expander("**About This Survey**"):
-            st.markdown("""
-            This survey collects global insights on weather-responsive VSL systems. 
-            All responses are anonymized and will be used for academic research.
-            """)
-            
-        cols = st.columns(2)
-        with cols[0]:
-            st.session_state.responses['region'] = st.radio(
-                "**1. Geographical region of operation**",
-                options=['North America', 'Europe', 'Australia/NZ', 'Asia', 
-                        'Middle East', 'Africa', 'South America']
-            )
-        with cols[1]:
-            st.session_state.responses['experience'] = st.radio(
-                "**2. Years of experience with WRVSL systems**",
-                options=['<1 year', '1–3 years', '4–7 years', '8+ years']
-            )
-            
-        st.session_state.responses['org_type'] = st.selectbox(
-            "**3. Organization type**",
-            options=['Government agency', 'Private consultancy', 
-                    'Academic', 'NGO', 'Other']
-        )
+        st.session_state.responses['region'] = st.radio("**1. Geographical region of operation**", ['North America', 'Europe', 'Australia/NZ', 'Asia', 'Middle East', 'Africa', 'South America'])
+        st.session_state.responses['experience'] = st.radio("**2. Years of experience with WRVSL systems**", ['<1 year', '1–3 years', '4–7 years', '8+ years'])
+        st.session_state.responses['org_type'] = st.selectbox("**3. Organization type**", ['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'])
 
     elif section_num == 1:  # System Design
-        cols = st.columns(2)
-        with cols[0]:
-            st.markdown("### System Configuration")
-            st.session_state.responses['vsl_types'] = st.multiselect(
-                "**4. Types of VSL systems managed**",
-                options=['Congestion-responsive', 'Weather-responsive', 
-                        'Event-specific', 'Other']
-            )
-            
-            weather_params = st.multiselect(
-                "**5. Primary weather parameters triggering adjustments**",
-                options=['Rainfall intensity', 'Snow accumulation', 'Pavement friction',
-                        'Visibility', 'Wind speed', 'Humidity', 'Other']
-            )
-            st.session_state.responses['weather_params'] = ", ".join(weather_params) if weather_params else "None"
-            
-        with cols[1]:
-            st.markdown("### Data & Control Logic")
-            data_sources = ["RWIS/roadside sensors", "Connected vehicle telematics",
-                           "Radar/satellite forecasts", "Thermal cameras",
-                           "Manual operator reports"]
-            ranked = st.multiselect(
-                "**6. Rank data sources (1=Most Critical)**",
-                options=data_sources,
-                default=data_sources,
-                format_func=lambda x: f"{data_sources.index(x)+1}. {x}"
-            )
-            st.session_state.responses['data_sources'] = ", ".join(ranked) if ranked else "None"
-            
-            control_logic = st.radio(
-                "**7. Control logic architecture**",
-                options=['Rule-based thresholds (fixed)', 
-                        'Dynamic thresholds (real-time adjustments)',
-                        'Machine learning based'],
-                help=TOOLTIPS['control_logic']
-            )
-            st.session_state.responses['control_logic'] = control_logic
-            
-            if "Rule-based" in control_logic:
-                threshold_method = st.radio(
-                    "**How were thresholds determined?**",
-                    options=['Historical crash data', 'Regulatory guidelines',
-                            'Trial-and-error', 'Other']
-                )
-                st.session_state.responses['threshold_method'] = threshold_method
+        st.session_state.responses['vsl_types'] = st.multiselect("**4. Types of VSL systems managed**", ['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'])
+        st.session_state.responses['weather_params'] = st.multiselect("**5. Primary weather parameters triggering adjustments**", ['Rainfall intensity', 'Snow accumulation', 'Pavement friction', 'Visibility', 'Wind speed', 'Humidity', 'Other'])
+        st.session_state.responses['data_sources'] = st.text_area("**6. Rank data sources used for weather inputs (1=Most Critical, 5=Least)**", "RWIS/roadside sensors, Connected vehicle telematics, Radar/satellite forecasts, Thermal cameras, Manual operator reports")
+        st.session_state.responses['control_logic'] = st.radio("**7. Control logic architecture**", ['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'])
+        if st.session_state.responses['control_logic'] == 'Rule-based thresholds (fixed)':
+            st.session_state.responses['rule_based_thresholds'] = st.radio("**Threshold determination method**", ['Historical crash data', 'Regulatory guidelines', 'Trial-and-error', 'Other'])
+        st.session_state.responses['speed_adjustment'] = st.radio("**8. Speed adjustment protocols**", ['Fixed increments', 'Dynamic models', 'Operator discretion'])
 
+    elif section_num == 2:  # Operational Challenges
+        st.markdown("**9. Challenge severity (Rate 1–5, 1=Minor, 5=Critical)**")
+        st.session_state.responses['sensor_reliability'] = st.slider("Sensor reliability", 1, 5)
+        st.session_state.responses['driver_compliance'] = st.slider("Driver compliance", 1, 5)
+        st.session_state.responses['maintenance_costs'] = st.slider("Maintenance costs", 1, 5)
+        st.session_state.responses['coordination'] = st.slider("Inter-agency coordination", 1, 5)
+        st.session_state.responses['mitigation_strategies'] = st.multiselect("**10. Mitigation strategies for non-compliance**", ['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'])
+
+    elif section_num == 3:  # Impact Assessment
+        st.session_state.responses['safety_improvement'] = st.slider("**11. Crash reduction (%)**", 0, 100)
+        st.session_state.responses['safety_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
+        st.session_state.responses['speed_compliance'] = st.slider("**12. Speed compliance rate (%)**", 0, 100)
+
+    elif section_num == 4:  # Lessons Learned
+        st.session_state.responses['success_story'] = st.text_area("**13. Success story (Max 200 words)**")
+        st.session_state.responses['unexpected_challenges'] = st.text_area("**14. Unexpected challenges & resolution (Max 150 words)**")
+
+    elif section_num == 5:  # Policy & Governance
+        st.session_state.responses['regulations'] = st.multiselect("**16. Regulatory frameworks used**", ['Austroads Guidelines', 'MUTCD Section 4L', 'EU Directive 2021/034', 'Other'])
+        st.markdown("**17. Multi-agency collaboration frequency**")
+        st.session_state.responses['meteorology'] = st.radio("Meteorological department", ['Daily', 'Weekly', 'Monthly', 'Never'])
+        st.session_state.responses['law_enforcement'] = st.radio("Law enforcement", ['Daily', 'Weekly', 'Monthly', 'Never'])
+        st.session_state.responses['road_maintenance'] = st.radio("Road maintenance teams", ['Daily', 'Weekly', 'Monthly', 'Never'])
+
+    elif section_num == 6:  # Future Directions
+        st.session_state.responses['emerging_tech'] = st.text_area("**18. Rank emerging technologies (1=Most important, 4=Least)**", "AI/ML prediction models, Satellite-connected IoT sensors, Connected vehicle integration")
+        st.session_state.responses['research_gaps'] = st.text_area("**19. Research gaps hindering WRVSL advancements (100 words max)**")
+
+    elif section_num == 7:  # Optional Demographics
+        st.session_state.responses['follow_up'] = st.radio("**20. Contact for follow-up?**", ['Yes', 'No'])
+        if st.session_state.responses['follow_up'] == 'Yes':
+            st.session_state.responses['email'] = st.text_input("Enter email")
+
+# ---- Save Responses to GitHub ----
 def save_to_github(df):
-    """Save responses to GitHub repo"""
-    try:
-        g = Github(GITHUB_TOKEN)
-        repo = g.get_repo(REPO_NAME)
+    g = Github(GITHUB_TOKEN)
+    repo = g.get_repo(REPO_NAME)
+    repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
 
-        # Check if file exists
-        try:
-            contents = repo.get_contents(CSV_PATH)
-            existing_data = pd.read_csv(contents.decoded_content.decode("utf-8"))
-            updated_df = pd.concat([existing_data, df])
-            repo.update_file(contents.path, "Update VSL responses", updated_df.to_csv(index=False), contents.sha)
-        except Exception:
-            # File does not exist, create a new one
-            repo.create_file(CSV_PATH, "Create VSL responses", df.to_csv(index=False))
-        
-        return True
-    except Exception as e:
-        st.error(f"GitHub save error: {e}")
-        return False
-
-# Main app layout
-st.set_page_config(page_title="Global VSL Survey", layout="wide")
-st.markdown("""
-<style>
-    [data-testid=stSidebar] {
-        display: none !important;
-    }
-    .stProgress > div > div > div {
-        background-color: #1E90FF;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-st.title("🌦️ Global Weather-Responsive VSL Survey")
-st.markdown(f"**Progress:** {int(progress*100)}% complete")
-st.progress(progress)
-
-# Show current section
+# ---- Navigation ----
 show_section(st.session_state.current_section)
 
-# Navigation controls
-col1, col2, col3 = st.columns([2,1,2])
-with col2:
-    if st.session_state.current_section > 0:
-        if st.button("← Previous Section"):
-            st.session_state.current_section -= 1
-            st.experimental_rerun()
-            
-    if st.session_state.current_section < len(SECTIONS)-1:
-        if st.button("Next Section →"):
-            # Add validation here
-            st.session_state.current_section += 1
-            st.experimental_rerun()
-    else:
-        if st.button("Submit Responses"):
-            df = pd.DataFrame([st.session_state.responses])
-            
-            # Save to GitHub
-            if GITHUB_TOKEN:
-                if save_to_github(df):
-                    st.success("Responses saved successfully!")
-                else:
-                    st.error("Error saving responses")
-            
-            # Local download fallback
-            csv = df.to_csv(index=False)
-            st.download_button(
-                label="Download Responses",
-                data=csv,
-                file_name='vsl_responses.csv',
-                mime='text/csv'
-            )
-            
-            # Properly reset session state after submission
-            st.session_state.responses = {}
-            st.session_state.current_section = 0
-            st.session_state.submitted = True
-            st.experimental_rerun()
+if st.button("Next Section →"):
+    st.session_state.current_section += 1
+    st.rerun()
+
+if st.session_state.current_section == len(SECTIONS) - 1 and st.button("Submit"):
+    df = pd.DataFrame([st.session_state.responses])
+    save_to_github(df)
+    st.success("Responses saved successfully!")
