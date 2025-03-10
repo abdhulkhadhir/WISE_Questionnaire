@@ -22,6 +22,10 @@ if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
 # Configure GitHub integration
+if "GITHUB_TOKEN" not in st.secrets:
+    st.error("GitHub token is missing. Please configure `st.secrets`.")
+    st.stop()
+
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO_NAME = "abdhulkhadhir/qd_visualiser"
 CSV_PATH = "responses.csv"
@@ -92,7 +96,7 @@ def show_section(section_num):
                 options=['Rainfall intensity', 'Snow accumulation', 'Pavement friction',
                         'Visibility', 'Wind speed', 'Humidity', 'Other']
             )
-            st.session_state.responses['weather_params'] = ", ".join(weather_params)
+            st.session_state.responses['weather_params'] = ", ".join(weather_params) if weather_params else "None"
             
         with cols[1]:
             st.markdown("### Data & Control Logic")
@@ -105,7 +109,7 @@ def show_section(section_num):
                 default=data_sources,
                 format_func=lambda x: f"{data_sources.index(x)+1}. {x}"
             )
-            st.session_state.responses['data_sources'] = ", ".join(ranked)
+            st.session_state.responses['data_sources'] = ", ".join(ranked) if ranked else "None"
             
             control_logic = st.radio(
                 "**7. Control logic architecture**",
@@ -123,22 +127,27 @@ def show_section(section_num):
                             'Trial-and-error', 'Other']
                 )
                 st.session_state.responses['threshold_method'] = threshold_method
-                
-    # Add other section implementations following similar patterns...
 
 def save_to_github(df):
     """Save responses to GitHub repo"""
-    g = Github(GITHUB_TOKEN)
-    repo = g.get_repo(REPO_NAME)
-    contents = repo.get_contents(CSV_PATH)
-    
-    # Append new response
-    existing_data = pd.read_csv(base64.b64decode(contents.content))
-    updated_df = pd.concat([existing_data, df])
-    
-    repo.update_file(contents.path, "Update VSL responses", 
-                    updated_df.to_csv(index=False), contents.sha)
-    return True
+    try:
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+
+        # Check if file exists
+        try:
+            contents = repo.get_contents(CSV_PATH)
+            existing_data = pd.read_csv(contents.decoded_content.decode("utf-8"))
+            updated_df = pd.concat([existing_data, df])
+            repo.update_file(contents.path, "Update VSL responses", updated_df.to_csv(index=False), contents.sha)
+        except Exception:
+            # File does not exist, create a new one
+            repo.create_file(CSV_PATH, "Create VSL responses", df.to_csv(index=False))
+        
+        return True
+    except Exception as e:
+        st.error(f"GitHub save error: {e}")
+        return False
 
 # Main app layout
 st.set_page_config(page_title="Global VSL Survey", layout="wide")
@@ -193,7 +202,8 @@ with col2:
                 mime='text/csv'
             )
             
-            st.session_state.submitted = True
+            # Properly reset session state after submission
             st.session_state.responses = {}
             st.session_state.current_section = 0
+            st.session_state.submitted = True
             st.experimental_rerun()
