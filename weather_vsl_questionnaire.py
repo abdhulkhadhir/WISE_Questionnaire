@@ -10,7 +10,7 @@ st.set_page_config(page_title="Global VSL Survey", layout="wide")
 
 # ---- GitHub Configuration ----
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO_NAME = "abdhulkhadhir/qd_visualiser"
+REPO_NAME = "abdhulkhadhir/WISE_Questionnaire"
 CSV_PATH = "responses.csv"
 
 # ---- Define Survey Sections ----
