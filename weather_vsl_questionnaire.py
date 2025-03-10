@@ -119,13 +119,17 @@ show_section(st.session_state.current_section)
 def save_to_github(df):
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(REPO_NAME)
-
+    
     try:
-        file_content = df.to_csv(index=False)
-        repo.create_file(CSV_PATH, "Create VSL responses file", file_content)
+        # Check if the file exists
+        file = repo.get_contents(CSV_PATH)
+        # If file exists, update it
+        repo.update_file(file.path, "Update VSL responses file", df.to_csv(index=False), file.sha)
+        print("File updated successfully")
+    except:
+        # If the file doesn't exist, create it
+        repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
         print("File created successfully")
-    except Exception as e:
-        logging.error(f"Error while creating file: {e}")
 
 # ---- Navigation Buttons ----
 if st.session_state.current_section > 0:
