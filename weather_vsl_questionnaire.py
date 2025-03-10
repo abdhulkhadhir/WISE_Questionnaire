@@ -84,10 +84,10 @@ def show_section(section_num):
         st.session_state.responses['mitigation_strategies'] = st.multiselect("**10. Mitigation strategies for non-compliance**", ['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'])
 
     elif section_num == 3:  # Impact Assessment
-        st.session_state.responses['safety_improvement'] = st.slider("**11. Crash reduction (%)**", 0, 100)
-        st.session_state.responses['safety_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
-        st.session_state.responses['speed_compliance'] = st.slider("**12. Speed compliance rate (%)**", 0, 100)
-        st.session_state.responses['speed_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
+        st.session_state.responses['safety_improvement'] = st.slider("**11. Crash reduction (%)**", 0, 100, key="safety_improvement_slider")
+        st.session_state.responses['safety_source'] = st.radio("**Data source**", ['Field', 'Simulation'], key="safety_source_radio")
+        st.session_state.responses['speed_compliance'] = st.slider("**12. Speed compliance rate (%)**", 0, 100, key="speed_compliance_slider")
+        st.session_state.responses['speed_source'] = st.radio("**Data source**", ['Field', 'Simulation'], key="speed_source_radio")
 
     elif section_num == 4:  # Lessons Learned
         st.session_state.responses['success_story'] = st.text_area("**13. Success story (Max 200 words)**")
