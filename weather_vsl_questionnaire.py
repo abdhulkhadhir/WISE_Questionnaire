@@ -119,7 +119,13 @@ show_section(st.session_state.current_section)
 def save_to_github(df):
     g = Github(GITHUB_TOKEN)
     repo = g.get_repo(REPO_NAME)
-    repo.create_file(CSV_PATH, "Create VSL responses file", df.to_csv(index=False))
+
+    try:
+        file_content = df.to_csv(index=False)
+        repo.create_file(CSV_PATH, "Create VSL responses file", file_content)
+        print("File created successfully")
+    except Exception as e:
+        logging.error(f"Error while creating file: {e}")
 
 # ---- Navigation Buttons ----
 if st.session_state.current_section > 0:
