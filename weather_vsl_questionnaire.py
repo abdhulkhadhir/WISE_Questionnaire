@@ -36,14 +36,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# ---- Title & Introduction ----
-st.title("🌍 Global WRVSL Survey")
-st.markdown("""
-    Welcome to the **Global WRVSL Survey**. Our goal is to assess the effectiveness and challenges of Weather Responsive Variable Speed Limit (WRVSL) systems. 
-    Your participation is essential in shaping future implementations, policies, and technological advancements in this field.
-""")
-st.markdown("---")
-
 # ---- GitHub Configuration ----
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO_NAME = "abdhulkhadhir/WISE_Questionnaire"
@@ -62,12 +54,26 @@ SECTIONS = [
 ]
 
 # ---- Initialize Session State ----
+if 'landing' not in st.session_state:
+    st.session_state.landing = True
 if 'current_section' not in st.session_state:
     st.session_state.current_section = 0
 if 'responses' not in st.session_state:
     st.session_state.responses = {}
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
+
+# ---- Landing Page ----
+if st.session_state.landing:
+    st.title("🌍 Global WRVSL Survey")
+    st.markdown("""
+        Welcome to the **Global WRVSL Survey**. Our goal is to assess the effectiveness and challenges of Weather Responsive Variable Speed Limit (WRVSL) systems. 
+        Your participation is essential in shaping future implementations, policies, and technological advancements in this field.
+    """)
+    if st.button("Start Survey"):
+        st.session_state.landing = False
+        st.experimental_rerun()
+    st.stop()
 
 # ---- Sidebar Navigation ----
 st.sidebar.title("📋 Survey Progress")
@@ -85,14 +91,8 @@ for i, section in enumerate(SECTIONS):
 def show_section(section_num):
     st.markdown("<div class='main'>", unsafe_allow_html=True)
     
-    # Section 0: Introduction & Participant Context
+    # Section 0: Participant Context (Landing page already shown)
     if section_num == 0:
-        st.title("Global WRVSL Survey")
-        st.markdown("""
-            Welcome to the Global WRVSL Survey. Our goal is to assess the effectiveness of WRVSL systems.
-            Please provide your details and context below.
-        """)
-        st.markdown("---")
         st.subheader("Participant Context")
         st.session_state.responses['region'] = st.radio(
             "1. Geographical region of operation",
@@ -292,7 +292,6 @@ def show_section(section_num):
                 "Enter email",
                 help="Please provide your email address for further contact."
             )
-        # Review Section - expand to show current responses before submission
         with st.expander("Review Your Answers"):
             st.write(st.session_state.responses)
     
