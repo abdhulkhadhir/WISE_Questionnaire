@@ -9,7 +9,7 @@ from io import StringIO
 # ---- Streamlit Page Config ----
 st.set_page_config(page_title="Global WRVSL Survey", layout="wide")
 
-# ---- Custom CSS for Visual Appeal ----
+# ---- Custom CSS for Enhanced Visual Appeal ----
 st.markdown("""
     <style>
         body {
@@ -18,6 +18,7 @@ st.markdown("""
         .main {
             background-color: #ffffff;
             padding: 2rem;
+            margin: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
@@ -29,8 +30,19 @@ st.markdown("""
         .progress-bar {
             margin-bottom: 1rem;
         }
+        h1, h2, h3, h4 {
+            color: #333366;
+        }
     </style>
     """, unsafe_allow_html=True)
+
+# ---- Title & Introduction ----
+st.title("🌍 Global WRVSL Survey")
+st.markdown("""
+    Welcome to the **Global WRVSL Survey**. Our goal is to assess the effectiveness and challenges of Weather Responsive Variable Speed Limit (WRVSL) systems. 
+    Your participation is essential in shaping future implementations, policies, and technological advancements in this field.
+""")
+st.markdown("---")
 
 # ---- GitHub Configuration ----
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
@@ -68,20 +80,20 @@ for i, section in enumerate(SECTIONS):
     else:
         if st.sidebar.button(section, key=f"btn_{i}"):
             st.session_state.current_section = i
-            # Changing state causes a rerun so no explicit st.experimental_rerun() is needed.
 
 # ---- Function to Render Sections ----
 def show_section(section_num):
     st.markdown("<div class='main'>", unsafe_allow_html=True)
-    # Section 0 includes an introduction
+    
+    # Section 0: Introduction & Participant Context
     if section_num == 0:
-        st.markdown("## Introduction")
+        st.title("Global WRVSL Survey")
         st.markdown("""
-            Welcome to the Global WRVSL Survey. Our aim is to understand the best practices and challenges in deploying Weather Responsive Variable Speed Limit (WRVSL) systems. 
-            Your insights will help shape future developments and policies in this field. Please answer the following questions based on your experience.
-            """)
+            Welcome to the Global WRVSL Survey. Our goal is to assess the effectiveness of WRVSL systems.
+            Please provide your details and context below.
+        """)
         st.markdown("---")
-        st.markdown("## Participant Context")
+        st.subheader("Participant Context")
         st.session_state.responses['region'] = st.radio(
             "1. Geographical region of operation",
             options=['North America', 'Europe', 'Australia/NZ', 'Asia', 'Middle East', 'Africa', 'South America'],
@@ -97,15 +109,16 @@ def show_section(section_num):
             options=['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'],
             help="Select the type of organization you are affiliated with."
         )
-    elif section_num == 1:  # System Design
-        st.markdown("## System Design")
-        vsl_selection = st.multiselect(
+    
+    # Section 1: System Design
+    elif section_num == 1:
+        st.subheader("System Design")
+        st.session_state.responses['vsl_types'] = st.multiselect(
             "4. Types of VSL systems managed",
             options=['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'],
             help="Select all the Variable Speed Limit systems your organization manages."
         )
-        st.session_state.responses['vsl_types'] = vsl_selection
-        if 'Other' in vsl_selection:
+        if 'Other' in st.session_state.responses['vsl_types']:
             st.session_state.responses['vsl_other'] = st.text_input(
                 "Please specify other VSL type",
                 help="Enter details if your system type does not fit the listed options."
@@ -120,17 +133,28 @@ def show_section(section_num):
             options=['Cameras', 'Alternative data sources', 'None'],
             help="Choose how you verify the weather data inputs for accuracy."
         )
+        st.session_state.responses['verification_method'] = verification
         if verification == 'Alternative data sources':
             st.session_state.responses['verification_sources'] = st.text_input(
                 "Specify alternative verification sources",
                 help="List the alternative sources used to verify weather inputs."
             )
-        st.markdown("**7. Data sources used for weather inputs (Rank 1–5, 1=Most Critical)**", help="Rank the importance of each data source in your system.")
-        st.session_state.responses['rw_sensors'] = st.slider("RWIS/roadside sensors", 1, 5, help="Rank the criticality of RWIS sensors.")
-        st.session_state.responses['vehicle_telematics'] = st.slider("Connected vehicle telematics", 1, 5, help="Rank the importance of connected vehicle data.")
-        st.session_state.responses['sat_forecasts'] = st.slider("Radar/satellite forecasts", 1, 5, help="Rank the importance of radar/satellite forecasts.")
-        st.session_state.responses['thermal_cameras'] = st.slider("Thermal/visual cameras", 1, 5, help="Rank the criticality of thermal/visual cameras.")
-        st.session_state.responses['manual_reports'] = st.slider("Manual operator reports", 1, 5, help="Rank how critical manual reports are to your process.")
+        st.markdown("**7. Data sources used for weather inputs (Rank 1–5, 1=Most Critical)**")
+        st.session_state.responses['rw_sensors'] = st.slider(
+            "RWIS/roadside sensors", 1, 5, help="Rank the criticality of RWIS sensors."
+        )
+        st.session_state.responses['vehicle_telematics'] = st.slider(
+            "Connected vehicle telematics", 1, 5, help="Rank the importance of connected vehicle data."
+        )
+        st.session_state.responses['sat_forecasts'] = st.slider(
+            "Radar/satellite forecasts", 1, 5, help="Rank the importance of radar/satellite forecasts."
+        )
+        st.session_state.responses['thermal_cameras'] = st.slider(
+            "Thermal/visual cameras", 1, 5, help="Rank the criticality of thermal/visual cameras."
+        )
+        st.session_state.responses['manual_reports'] = st.slider(
+            "Manual operator reports", 1, 5, help="Rate the importance of manual operator reports."
+        )
         st.session_state.responses['control_logic'] = st.radio(
             "8. Control logic architecture",
             options=['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'],
@@ -156,9 +180,11 @@ def show_section(section_num):
             options=['Within 5km of sensor', 'Entire carriageway', 'Overlapping zones'],
             help="Select the geographical coverage of your WRVSL system."
         )
-    elif section_num == 2:  # Operational Challenges
-        st.markdown("## Operational Challenges")
-        st.markdown("**13. Challenge severity (Rate 1–5, 1=Minor, 5=Critical)**", help="Rate the severity of each challenge in your operations.")
+    
+    # Section 2: Operational Challenges
+    elif section_num == 2:
+        st.subheader("Operational Challenges")
+        st.markdown("**13. Challenge severity (Rate 1–5, 1=Minor, 5=Critical)**")
         challenges = {
             'Sensor reliability': 'sensor_reliability',
             'Driver compliance': 'driver_compliance',
@@ -167,17 +193,20 @@ def show_section(section_num):
             'Operational FTE/resources': 'fte_challenge'
         }
         for label, key in challenges.items():
-            st.session_state.responses[key] = st.slider(label, 1, 5, help=f"Rate the severity of {label.lower()}.")
+            st.session_state.responses[key] = st.slider(
+                label, 1, 5, help=f"Rate the severity of {label.lower()}."
+            )
         st.session_state.responses['mitigation_strategies'] = st.multiselect(
             "14. Mitigation strategies for non-compliance",
             options=['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'],
             help="Select all strategies you employ to address non-compliance."
         )
-    elif section_num == 3:  # Impact Assessment
-        st.markdown("## Impact Assessment")
+    
+    # Section 3: Impact Assessment
+    elif section_num == 3:
+        st.subheader("Impact Assessment")
         st.session_state.responses['safety_improvement'] = st.slider(
-            "15. Crash reduction (%)",
-            0, 100,
+            "15. Crash reduction (%)", 0, 100,
             help="Estimate the percentage improvement in safety (crash reduction) due to WRVSL."
         )
         st.session_state.responses['safety_source'] = st.radio(
@@ -186,8 +215,7 @@ def show_section(section_num):
             help="Select whether the safety data is based on field observations or simulation results."
         )
         st.session_state.responses['speed_compliance'] = st.slider(
-            "16. Speed compliance rate (%)",
-            0, 100,
+            "16. Speed compliance rate (%)", 0, 100,
             help="Indicate the observed or expected speed compliance rate."
         )
         st.session_state.responses['speed_source'] = st.radio(
@@ -195,8 +223,10 @@ def show_section(section_num):
             options=['Field', 'Simulation'],
             help="Select whether the speed compliance data is based on field data or simulation."
         )
-    elif section_num == 4:  # Lessons Learned
-        st.markdown("## Lessons Learned")
+    
+    # Section 4: Lessons Learned
+    elif section_num == 4:
+        st.subheader("Lessons Learned")
         st.session_state.responses['success_story'] = st.text_area(
             "17. Success story (Max 200 words)",
             help="Share a success story related to WRVSL implementation. Please keep within 200 words."
@@ -205,14 +235,16 @@ def show_section(section_num):
             "18. Unexpected challenges & resolution (Max 150 words)",
             help="Describe any unforeseen challenges and how they were addressed, keeping within 150 words."
         )
-    elif section_num == 5:  # Policy & Governance
-        st.markdown("## Policy & Governance")
+    
+    # Section 5: Policy & Governance
+    elif section_num == 5:
+        st.subheader("Policy & Governance")
         st.session_state.responses['regulations'] = st.multiselect(
             "19. Regulatory frameworks used",
             options=['Austroads Guidelines', 'MUTCD Section 4L', 'EU Directive 2021/034', 'Other'],
             help="Select all regulatory frameworks that influence your system."
         )
-        st.markdown("**20. Multi-agency collaboration frequency**", help="Indicate the frequency of collaboration with different agencies.")
+        st.markdown("**20. Multi-agency collaboration frequency**")
         st.session_state.responses['meteorology'] = st.radio(
             "Meteorological department",
             options=['Daily', 'Weekly', 'Monthly', 'Never'],
@@ -228,18 +260,28 @@ def show_section(section_num):
             options=['Daily', 'Weekly', 'Monthly', 'Never'],
             help="Indicate how often you engage with road maintenance teams."
         )
-    elif section_num == 6:  # Future Directions
-        st.markdown("## Future Directions")
-        st.markdown("**21. Rank emerging technologies (1=Most Important, 4=Least Important)**", help="Rank the following technologies in order of importance.")
-        st.session_state.responses['ai_ml'] = st.slider("AI/ML prediction models", 1, 4, help="Rank AI/ML models for predicting weather-related impacts.")
-        st.session_state.responses['iot_sensors'] = st.slider("Satellite-connected IoT sensors", 1, 4, help="Rank the importance of IoT sensors in your system.")
-        st.session_state.responses['cv_integration'] = st.slider("Connected vehicle integration", 1, 4, help="Rate the importance of connected vehicle data integration.")
+    
+    # Section 6: Future Directions
+    elif section_num == 6:
+        st.subheader("Future Directions")
+        st.markdown("**21. Rank emerging technologies (1=Most Important, 4=Least Important)**")
+        st.session_state.responses['ai_ml'] = st.slider(
+            "AI/ML prediction models", 1, 4, help="Rank AI/ML models for predicting weather-related impacts."
+        )
+        st.session_state.responses['iot_sensors'] = st.slider(
+            "Satellite-connected IoT sensors", 1, 4, help="Rank the importance of IoT sensors in your system."
+        )
+        st.session_state.responses['cv_integration'] = st.slider(
+            "Connected vehicle integration", 1, 4, help="Rate the importance of connected vehicle data integration."
+        )
         st.session_state.responses['research_gaps'] = st.text_area(
             "22. Research gaps hindering WRVSL advancements (100 words max)",
             help="Briefly describe the research gaps that need to be addressed to advance WRVSL technology."
         )
-    elif section_num == 7:  # Optional Demographics
-        st.markdown("## Optional Demographics")
+    
+    # Section 7: Optional Demographics
+    elif section_num == 7:
+        st.subheader("Optional Demographics")
         st.session_state.responses['follow_up'] = st.radio(
             "23. Contact for follow-up?",
             options=['Yes', 'No'],
@@ -250,6 +292,10 @@ def show_section(section_num):
                 "Enter email",
                 help="Please provide your email address for further contact."
             )
+        # Review Section - expand to show current responses before submission
+        with st.expander("Review Your Answers"):
+            st.write(st.session_state.responses)
+    
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ---- Call Function to Render Section ----
@@ -266,7 +312,6 @@ def save_to_github(new_df):
             file = repo.get_contents(CSV_PATH)
             csv_data = file.decoded_content.decode('utf-8')
             existing_df = pd.read_csv(StringIO(csv_data))
-            # Append the new responses
             updated_df = pd.concat([existing_df, new_df], ignore_index=True)
             file_content = updated_df.to_csv(index=False)
             repo.update_file(CSV_PATH, "Update WRVSL responses", file_content, file.sha)
@@ -288,13 +333,13 @@ def next_section():
 col1, col2 = st.columns(2)
 with col1:
     if st.session_state.current_section > 0:
-        st.button("Previous", on_click=previous_section)
+        st.button("⬅️ Previous", on_click=previous_section)
 with col2:
     if st.session_state.current_section < len(SECTIONS) - 1:
-        st.button("Next", on_click=next_section)
+        st.button("Next ➡️", on_click=next_section)
     else:
-        if st.button("Submit"):
+        if st.button("✅ Submit"):
             df = pd.DataFrame([st.session_state.responses])
             save_to_github(df)
-            st.success("Responses saved successfully!")
-            st.session_state.submitted = True 
+            st.success("Responses saved successfully! 🎉")
+            st.session_state.submitted = True
