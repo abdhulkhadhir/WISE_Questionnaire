@@ -68,7 +68,7 @@ for i, section in enumerate(SECTIONS):
     else:
         if st.sidebar.button(section, key=f"btn_{i}"):
             st.session_state.current_section = i
-            st.experimental_rerun()
+            # Changing state causes a rerun so no explicit st.experimental_rerun() is needed.
 
 # ---- Function to Render Sections ----
 def show_section(section_num):
@@ -277,18 +277,21 @@ def save_to_github(new_df):
     except Exception as e:
         logging.error(f"Error saving to GitHub: {e}")
 
+# ---- Navigation Button Callbacks ----
+def previous_section():
+    st.session_state.current_section -= 1
+
+def next_section():
+    st.session_state.current_section += 1
+
 # ---- Navigation Buttons ----
 col1, col2 = st.columns(2)
 with col1:
     if st.session_state.current_section > 0:
-        if st.button("Previous"):
-            st.session_state.current_section -= 1
-            st.experimental_rerun()
+        st.button("Previous", on_click=previous_section)
 with col2:
     if st.session_state.current_section < len(SECTIONS) - 1:
-        if st.button("Next"):
-            st.session_state.current_section += 1
-            st.experimental_rerun()
+        st.button("Next", on_click=next_section)
     else:
         if st.button("Submit"):
             df = pd.DataFrame([st.session_state.responses])
