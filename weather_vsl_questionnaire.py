@@ -7,11 +7,29 @@ from github import Github
 
 # ---- Streamlit Page Config ----
 st.set_page_config(page_title="Global WRVSL Survey", layout="wide")
+
+# ---- Custom CSS for Visual Appeal ----
 st.markdown("""
-### Definitions
-**WRVSL (Weather-Responsive Variable Speed Limit):** Systems dynamically adjusting speed limits based on real-time weather conditions.  
-**VSL (Variable Speed Limit):** Broader category including weather-responsive, congestion-responsive, and event-specific systems.
-""")
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .main {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .sidebar .sidebar-content {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .progress-bar {
+            margin-bottom: 1rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # ---- GitHub Configuration ----
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
@@ -20,7 +38,7 @@ CSV_PATH = "responses.csv"
 
 # ---- Define Survey Sections ----
 SECTIONS = [
-    "Participant Context",
+    "Introduction & Participant Context",
     "System Design",
     "Operational Challenges",
     "Impact Assessment",
@@ -47,141 +65,222 @@ for i, section in enumerate(SECTIONS):
     if i == st.session_state.current_section:
         st.sidebar.markdown(f"➡️ **{section}**")
     else:
-        if st.sidebar.button(section):
+        if st.sidebar.button(section, key=f"btn_{i}"):
             st.session_state.current_section = i
-            st.rerun()
+            st.experimental_rerun()
 
 # ---- Function to Render Sections ----
 def show_section(section_num):
-    """Renders the current survey section."""
-    st.markdown(f"## {SECTIONS[section_num]}")
-
-    if section_num == 0:  # Participant Context
-        st.session_state.responses['region'] = st.radio("**1. Geographical region of operation**", 
-            ['North America', 'Europe', 'Australia/NZ', 'Asia', 'Middle East', 'Africa', 'South America'])
-        st.session_state.responses['experience'] = st.radio("**2. Years of experience with WRVSL systems**", 
-            ['<1 year', '1–3 years', '4–7 years', '8+ years'])
-        st.session_state.responses['org_type'] = st.selectbox("**3. Organization type**", 
-            ['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'])
-
+    st.markdown("<div class='main'>", unsafe_allow_html=True)
+    # Section 0 includes an introduction
+    if section_num == 0:
+        st.markdown("## Introduction")
+        st.markdown("""
+            Welcome to the Global WRVSL Survey. Our aim is to understand the best practices and challenges in deploying Weather Responsive Variable Speed Limit (WRVSL) systems. 
+            Your insights will help shape future developments and policies in this field. Please answer the following questions based on your experience.
+            """)
+        st.markdown("---")
+        st.markdown("## Participant Context")
+        st.session_state.responses['region'] = st.radio(
+            "1. Geographical region of operation",
+            options=['North America', 'Europe', 'Australia/NZ', 'Asia', 'Middle East', 'Africa', 'South America'],
+            help="Select the region where your operations are based."
+        )
+        st.session_state.responses['experience'] = st.radio(
+            "2. Years of experience with WRVSL systems",
+            options=['<1 year', '1–3 years', '4–7 years', '8+ years'],
+            help="Choose the option that best describes your experience."
+        )
+        st.session_state.responses['org_type'] = st.selectbox(
+            "3. Organization type",
+            options=['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'],
+            help="Select the type of organization you are affiliated with."
+        )
     elif section_num == 1:  # System Design
-        vsl_selection = st.multiselect("**4. Types of VSL systems managed**", 
-            ['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'])
+        st.markdown("## System Design")
+        vsl_selection = st.multiselect(
+            "4. Types of VSL systems managed",
+            options=['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'],
+            help="Select all the Variable Speed Limit systems your organization manages."
+        )
         st.session_state.responses['vsl_types'] = vsl_selection
         if 'Other' in vsl_selection:
-            st.session_state.responses['vsl_other'] = st.text_input("Specify other VSL type")
-
-        st.session_state.responses['weather_params'] = st.multiselect("**5. Weather parameter(s) triggering speed adjustments**", 
-            ['Rainfall intensity', 'Snow accumulation', 'Pavement friction', 'Visibility', 'Wind speed', 'Other'])
-
-        # New verification question
-        verification = st.radio("**6. Verification method for weather inputs**",
-            ['Cameras', 'Alternative data sources', 'None'])
+            st.session_state.responses['vsl_other'] = st.text_input(
+                "Please specify other VSL type",
+                help="Enter details if your system type does not fit the listed options."
+            )
+        st.session_state.responses['weather_params'] = st.multiselect(
+            "5. Weather parameter(s) triggering speed adjustments",
+            options=['Rainfall intensity', 'Snow accumulation', 'Pavement friction', 'Visibility', 'Wind speed', 'Other'],
+            help="Select weather parameters that are critical in triggering speed adjustments."
+        )
+        verification = st.radio(
+            "6. Verification method for weather inputs",
+            options=['Cameras', 'Alternative data sources', 'None'],
+            help="Choose how you verify the weather data inputs for accuracy."
+        )
         if verification == 'Alternative data sources':
-            st.session_state.responses['verification_sources'] = st.text_input("Specify alternative verification sources")
-
-        st.markdown("**7. Data sources used for weather inputs (Rank 1–5, 1=Most Critical)**")
-        st.session_state.responses['rw_sensors'] = st.slider("RWIS/roadside sensors", 1, 5)
-        st.session_state.responses['vehicle_telematics'] = st.slider("Connected vehicle telematics", 1, 5)
-        st.session_state.responses['sat_forecasts'] = st.slider("Radar/satellite forecasts", 1, 5)
-        st.session_state.responses['thermal_cameras'] = st.slider("Thermal/visual cameras", 1, 5)
-        st.session_state.responses['manual_reports'] = st.slider("Manual operator reports", 1, 5)
-
-        st.session_state.responses['control_logic'] = st.radio("**8. Control logic architecture**", 
-            ['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'])
-        
-        # New mode questions
-        st.session_state.responses['operation_mode'] = st.radio("**9. Mode of operation**",
-            ['Alert only', 'System-recommended with operator approval', 'Fully automated'])
-        
-        st.session_state.responses['deactivation_mode'] = st.radio("**10. Mode of deactivation**",
-            ['Manual removal', 'Automated with operator alert', 'Automated without alert'])
-
-        st.session_state.responses['speed_adjustment'] = st.radio("**11. Speed adjustment protocols**", 
-            ['Fixed increments', 'Dynamic models', 'Operator discretion'])
-
-        # New geographic coverage
-        st.session_state.responses['geo_coverage'] = st.radio("**12. Geographic coverage**",
-            ['Within 5km of sensor', 'Entire carriageway', 'Overlapping zones'])
-
+            st.session_state.responses['verification_sources'] = st.text_input(
+                "Specify alternative verification sources",
+                help="List the alternative sources used to verify weather inputs."
+            )
+        st.markdown("**7. Data sources used for weather inputs (Rank 1–5, 1=Most Critical)**", help="Rank the importance of each data source in your system.")
+        st.session_state.responses['rw_sensors'] = st.slider("RWIS/roadside sensors", 1, 5, help="Rank the criticality of RWIS sensors.")
+        st.session_state.responses['vehicle_telematics'] = st.slider("Connected vehicle telematics", 1, 5, help="Rank the importance of connected vehicle data.")
+        st.session_state.responses['sat_forecasts'] = st.slider("Radar/satellite forecasts", 1, 5, help="Rank the importance of radar/satellite forecasts.")
+        st.session_state.responses['thermal_cameras'] = st.slider("Thermal/visual cameras", 1, 5, help="Rank the criticality of thermal/visual cameras.")
+        st.session_state.responses['manual_reports'] = st.slider("Manual operator reports", 1, 5, help="Rank how critical manual reports are to your process.")
+        st.session_state.responses['control_logic'] = st.radio(
+            "8. Control logic architecture",
+            options=['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'],
+            help="Select the type of control logic used in your system."
+        )
+        st.session_state.responses['operation_mode'] = st.radio(
+            "9. Mode of operation",
+            options=['Alert only', 'System-recommended with operator approval', 'Fully automated'],
+            help="Select the operational mode that best describes your system."
+        )
+        st.session_state.responses['deactivation_mode'] = st.radio(
+            "10. Mode of deactivation",
+            options=['Manual removal', 'Automated with operator alert', 'Automated without alert'],
+            help="Choose how the system is deactivated under normal conditions."
+        )
+        st.session_state.responses['speed_adjustment'] = st.radio(
+            "11. Speed adjustment protocols",
+            options=['Fixed increments', 'Dynamic models', 'Operator discretion'],
+            help="Select how speed adjustments are determined."
+        )
+        st.session_state.responses['geo_coverage'] = st.radio(
+            "12. Geographic coverage",
+            options=['Within 5km of sensor', 'Entire carriageway', 'Overlapping zones'],
+            help="Select the geographical coverage of your WRVSL system."
+        )
     elif section_num == 2:  # Operational Challenges
-        st.markdown("**13. Challenge severity (Rate 1–5, 1=Minor, 5=Critical)**")
+        st.markdown("## Operational Challenges")
+        st.markdown("**13. Challenge severity (Rate 1–5, 1=Minor, 5=Critical)**", help="Rate the severity of each challenge in your operations.")
         challenges = {
             'Sensor reliability': 'sensor_reliability',
             'Driver compliance': 'driver_compliance',
             'Maintenance costs': 'maintenance_costs',
             'Inter-agency coordination': 'coordination',
-            'Operational FTE/resources': 'fte_challenge'  # New challenge
+            'Operational FTE/resources': 'fte_challenge'
         }
-        
         for label, key in challenges.items():
-            st.session_state.responses[key] = st.slider(label, 1, 5)
-        
-        st.session_state.responses['mitigation_strategies'] = st.multiselect("**14. Mitigation strategies for non-compliance**", 
-            ['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'])
-
+            st.session_state.responses[key] = st.slider(label, 1, 5, help=f"Rate the severity of {label.lower()}.")
+        st.session_state.responses['mitigation_strategies'] = st.multiselect(
+            "14. Mitigation strategies for non-compliance",
+            options=['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'],
+            help="Select all strategies you employ to address non-compliance."
+        )
     elif section_num == 3:  # Impact Assessment
-        st.session_state.responses['safety_improvement'] = st.slider("**15. Crash reduction (%)**", 0, 100)
-        st.session_state.responses['safety_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
-        st.session_state.responses['speed_compliance'] = st.slider("**16. Speed compliance rate (%)**", 0, 100)
-        st.session_state.responses['speed_source'] = st.radio("**Data source**", ['Field', 'Simulation'])
-
+        st.markdown("## Impact Assessment")
+        st.session_state.responses['safety_improvement'] = st.slider(
+            "15. Crash reduction (%)",
+            0, 100,
+            help="Estimate the percentage improvement in safety (crash reduction) due to WRVSL."
+        )
+        st.session_state.responses['safety_source'] = st.radio(
+            "Data source for safety improvement",
+            options=['Field', 'Simulation'],
+            help="Select whether the safety data is based on field observations or simulation results."
+        )
+        st.session_state.responses['speed_compliance'] = st.slider(
+            "16. Speed compliance rate (%)",
+            0, 100,
+            help="Indicate the observed or expected speed compliance rate."
+        )
+        st.session_state.responses['speed_source'] = st.radio(
+            "Data source for speed compliance",
+            options=['Field', 'Simulation'],
+            help="Select whether the speed compliance data is based on field data or simulation."
+        )
     elif section_num == 4:  # Lessons Learned
-        st.session_state.responses['success_story'] = st.text_area("**17. Success story (Max 200 words)**")
-        st.session_state.responses['unexpected_challenges'] = st.text_area("**18. Unexpected challenges & resolution (Max 150 words)**")
-
+        st.markdown("## Lessons Learned")
+        st.session_state.responses['success_story'] = st.text_area(
+            "17. Success story (Max 200 words)",
+            help="Share a success story related to WRVSL implementation. Please keep within 200 words."
+        )
+        st.session_state.responses['unexpected_challenges'] = st.text_area(
+            "18. Unexpected challenges & resolution (Max 150 words)",
+            help="Describe any unforeseen challenges and how they were addressed, keeping within 150 words."
+        )
     elif section_num == 5:  # Policy & Governance
-        st.session_state.responses['regulations'] = st.multiselect("**19. Regulatory frameworks used**", 
-            ['Austroads Guidelines', 'MUTCD Section 4L', 'EU Directive 2021/034', 'Other'])
-        st.markdown("**20. Multi-agency collaboration frequency**")
-        st.session_state.responses['meteorology'] = st.radio("Meteorological department", 
-            ['Daily', 'Weekly', 'Monthly', 'Never'])
-        st.session_state.responses['law_enforcement'] = st.radio("Law enforcement", 
-            ['Daily', 'Weekly', 'Monthly', 'Never'])
-        st.session_state.responses['road_maintenance'] = st.radio("Road maintenance teams", 
-            ['Daily', 'Weekly', 'Monthly', 'Never'])
-
+        st.markdown("## Policy & Governance")
+        st.session_state.responses['regulations'] = st.multiselect(
+            "19. Regulatory frameworks used",
+            options=['Austroads Guidelines', 'MUTCD Section 4L', 'EU Directive 2021/034', 'Other'],
+            help="Select all regulatory frameworks that influence your system."
+        )
+        st.markdown("**20. Multi-agency collaboration frequency**", help="Indicate the frequency of collaboration with different agencies.")
+        st.session_state.responses['meteorology'] = st.radio(
+            "Meteorological department",
+            options=['Daily', 'Weekly', 'Monthly', 'Never'],
+            help="How often do you collaborate with the meteorological department?"
+        )
+        st.session_state.responses['law_enforcement'] = st.radio(
+            "Law enforcement",
+            options=['Daily', 'Weekly', 'Monthly', 'Never'],
+            help="How frequently is there interaction with law enforcement?"
+        )
+        st.session_state.responses['road_maintenance'] = st.radio(
+            "Road maintenance teams",
+            options=['Daily', 'Weekly', 'Monthly', 'Never'],
+            help="Indicate how often you engage with road maintenance teams."
+        )
     elif section_num == 6:  # Future Directions
-        st.markdown("**21. Rank emerging technologies (1=Most Important, 4=Least Important)**")
-        st.session_state.responses['ai_ml'] = st.slider("AI/ML prediction models", 1, 4)
-        st.session_state.responses['iot_sensors'] = st.slider("Satellite-connected IoT sensors", 1, 4)
-        st.session_state.responses['cv_integration'] = st.slider("Connected vehicle integration", 1, 4)
-        st.session_state.responses['research_gaps'] = st.text_area("**22. Research gaps hindering WRVSL advancements (100 words max)**")
-
+        st.markdown("## Future Directions")
+        st.markdown("**21. Rank emerging technologies (1=Most Important, 4=Least Important)**", help="Rank the following technologies in order of importance.")
+        st.session_state.responses['ai_ml'] = st.slider("AI/ML prediction models", 1, 4, help="Rank AI/ML models for predicting weather-related impacts.")
+        st.session_state.responses['iot_sensors'] = st.slider("Satellite-connected IoT sensors", 1, 4, help="Rank the importance of IoT sensors in your system.")
+        st.session_state.responses['cv_integration'] = st.slider("Connected vehicle integration", 1, 4, help="Rate the importance of connected vehicle data integration.")
+        st.session_state.responses['research_gaps'] = st.text_area(
+            "22. Research gaps hindering WRVSL advancements (100 words max)",
+            help="Briefly describe the research gaps that need to be addressed to advance WRVSL technology."
+        )
     elif section_num == 7:  # Optional Demographics
-        st.session_state.responses['follow_up'] = st.radio("**23. Contact for follow-up?**", ['Yes', 'No'])
+        st.markdown("## Optional Demographics")
+        st.session_state.responses['follow_up'] = st.radio(
+            "23. Contact for follow-up?",
+            options=['Yes', 'No'],
+            help="Indicate if you are willing to be contacted for follow-up questions."
+        )
         if st.session_state.responses['follow_up'] == 'Yes':
-            st.session_state.responses['email'] = st.text_input("Enter email")
+            st.session_state.responses['email'] = st.text_input(
+                "Enter email",
+                help="Please provide your email address for further contact."
+            )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---- Call Function to Render Section ----
 show_section(st.session_state.current_section)
 
-# ---- Save Responses to GitHub ----
+# ---- Function to Save Responses to GitHub ----
 def save_to_github(df):
     try:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         g = Github(GITHUB_TOKEN)
         repo = g.get_repo(REPO_NAME)
         file_content = df.to_csv(index=False)
-
         try:
             file = repo.get_contents(CSV_PATH)
             repo.update_file(CSV_PATH, "Update WRVSL responses", file_content, file.sha)
         except Exception as e:
             repo.create_file(CSV_PATH, "Create WRVSL responses", file_content)
-
     except Exception as e:
         logging.error(f"Error saving to GitHub: {e}")
 
 # ---- Navigation Buttons ----
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns(2)
 with col1:
     if st.session_state.current_section > 0:
-        st.button("Previous", on_click=lambda: st.session_state.update(current_section=st.session_state.current_section-1))
-
+        if st.button("Previous"):
+            st.session_state.current_section -= 1
+            st.experimental_rerun()
 with col2:
     if st.session_state.current_section < len(SECTIONS) - 1:
-        st.button("Next", on_click=lambda: st.session_state.update(current_section=st.session_state.current_section+1))
+        if st.button("Next"):
+            st.session_state.current_section += 1
+            st.experimental_rerun()
     else:
         if st.button("Submit"):
             df = pd.DataFrame([st.session_state.responses])
