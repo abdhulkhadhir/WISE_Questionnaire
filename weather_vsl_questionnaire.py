@@ -72,8 +72,8 @@ if st.session_state.landing:
     """)
     if st.button("Start Survey"):
         st.session_state.landing = False
-        st.experimental_rerun()
-    st.stop()
+    else:
+        st.stop()  # Prevents further execution until "Start Survey" is clicked
 
 # ---- Sidebar Navigation ----
 st.sidebar.title("📋 Survey Progress")
@@ -91,7 +91,7 @@ for i, section in enumerate(SECTIONS):
 def show_section(section_num):
     st.markdown("<div class='main'>", unsafe_allow_html=True)
     
-    # Section 0: Participant Context (Landing page already shown)
+    # Section 0: Participant Context
     if section_num == 0:
         st.subheader("Participant Context")
         st.session_state.responses['region'] = st.radio(
