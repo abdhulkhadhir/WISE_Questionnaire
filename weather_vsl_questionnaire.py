@@ -4,6 +4,7 @@ import json
 import base64
 import logging
 from github import Github
+from io import StringIO
 
 # ---- Streamlit Page Config ----
 st.set_page_config(page_title="Global WRVSL Survey", layout="wide")
@@ -254,17 +255,24 @@ def show_section(section_num):
 # ---- Call Function to Render Section ----
 show_section(st.session_state.current_section)
 
-# ---- Function to Save Responses to GitHub ----
-def save_to_github(df):
+# ---- Function to Save and Append Responses to GitHub ----
+def save_to_github(new_df):
     try:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         g = Github(GITHUB_TOKEN)
         repo = g.get_repo(REPO_NAME)
-        file_content = df.to_csv(index=False)
         try:
+            # Attempt to get the existing file from the repository
             file = repo.get_contents(CSV_PATH)
+            csv_data = file.decoded_content.decode('utf-8')
+            existing_df = pd.read_csv(StringIO(csv_data))
+            # Append the new responses
+            updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+            file_content = updated_df.to_csv(index=False)
             repo.update_file(CSV_PATH, "Update WRVSL responses", file_content, file.sha)
         except Exception as e:
+            # If the file doesn't exist, create a new one with the new response
+            file_content = new_df.to_csv(index=False)
             repo.create_file(CSV_PATH, "Create WRVSL responses", file_content)
     except Exception as e:
         logging.error(f"Error saving to GitHub: {e}")
