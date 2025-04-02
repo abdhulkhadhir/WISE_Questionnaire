@@ -58,7 +58,7 @@ def show_section(section_num):
     st.markdown("<div class='main-container'>", unsafe_allow_html=True)
     
     if section_num == 0:
-        st.image("header_image.jpg", use_column_width=True)
+        # st.image("header_image.jpg", use_column_width=True)
         st.markdown("""
             # Welcome to the Global WRVSL Survey! 🎉
             **Why this survey?**  
