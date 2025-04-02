@@ -7,7 +7,7 @@ from github import Github
 from io import StringIO
 
 # ---- Streamlit Page Config ----
-st.set_page_config(page_title="Global WRVSL Survey", layout="wide")
+st.set_page_config(page_title="Global WRVSL State of Practice Survey", layout="wide")
 
 # ---- Custom CSS for Better Styling ----
 st.markdown("""
@@ -33,7 +33,7 @@ CSV_PATH = "responses.csv"
 
 # ---- Survey Sections ----
 SECTIONS = [
-    "Welcome", "Participant Context", "System Design", "Operational Challenges", "Impact Assessment",
+    "Home", "Participant Context", "System Design", "Operational Challenges", "Impact Assessment",
     "Lessons Learned", "Policy & Governance", "Future Directions", "Optional Demographics"
 ]
 
