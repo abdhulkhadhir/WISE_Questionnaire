@@ -156,7 +156,7 @@ def show_section(section_num):
             )
         st.markdown("""**7. Data sources used for weather inputs (Criticality Scale below)**  
         
-        **Criticality Scale:**  
+        ** Criticality Scale: **  
         - **Most Critical** – Essential and must be addressed immediately  
         - **Highly Critical** – Very important but not the highest priority  
         - **Moderately Critical** – Important but not urgent  
