@@ -65,7 +65,7 @@ if 'submitted' not in st.session_state:
 
 # ---- Landing Page ----
 if st.session_state.landing:
-    st.title("🌍 Global WRVSL Survey")
+    st.title("🌍 Weather Responsive VSL (WRVSL) Global State of Practice Survey ")
     st.markdown("""
         Welcome to the **Global WRVSL Survey**. Our goal is to assess the effectiveness and challenges of Weather Responsive Variable Speed Limit (WRVSL) systems. 
         Your participation is essential in shaping future implementations, policies, and technological advancements in this field.
@@ -111,17 +111,17 @@ def show_section(section_num):
     if section_num == 0:
         st.subheader("Participant Context")
         st.session_state.responses['q1_region'] = st.radio(
-            "1. Geographical region of operation",
+            "1). Geographical region of operation",
             options=['North America', 'Europe', 'Australia/NZ', 'Asia', 'Middle East', 'Africa', 'South America'],
             help="Select the region where your operations are based."
         )
         st.session_state.responses['q2_experience'] = st.radio(
-            "2. Years of experience with WRVSL systems",
+            "2). Years of experience with WRVSL systems",
             options=['<1 year', '1–3 years', '4–7 years', '8+ years'],
             help="Choose the option that best describes your experience."
         )
         st.session_state.responses['q3_org_type'] = st.selectbox(
-            "3. Organization type",
+            "3). Organization type",
             options=['Government agency', 'Private consultancy', 'Academic', 'NGO', 'Other'],
             help="Select the type of organization you are affiliated with."
         )
@@ -130,31 +130,31 @@ def show_section(section_num):
     elif section_num == 1:
         st.subheader("System Design")
         st.session_state.responses['q4_vsl_types'] = st.multiselect(
-            "4. Types of VSL systems managed",
+            "4). Types of VSL systems managed",
             options=['Congestion-responsive', 'Weather-responsive', 'Event-specific', 'Other'],
             help="Select all the Variable Speed Limit systems your organization manages."
         )
         if 'Other' in st.session_state.responses.get('q4_vsl_types', []):
             st.session_state.responses['q4_vsl_other'] = st.text_input(
-                "4.a. Please specify other VSL type",
+                "4).a. Please specify other VSL type",
                 help="Enter details if your system type does not fit the listed options."
             )
         st.session_state.responses['q5_weather_params'] = st.multiselect(
-            "5. Weather parameter(s) triggering speed adjustments",
+            "5). Weather parameter(s) triggering speed adjustments",
             options=['Rainfall intensity', 'Snow accumulation', 'Pavement friction', 'Visibility', 'Wind speed', 'Other'],
             help="Select weather parameters that are critical in triggering speed adjustments."
         )
         st.session_state.responses['q6_verification'] = st.radio(
-            "6. Verification method for weather inputs",
+            "6). Verification method for weather inputs",
             options=['Cameras', 'Alternative data sources', 'None'],
             help="Choose how you verify the weather data inputs for accuracy."
         )
         if st.session_state.responses['q6_verification'] == 'Alternative data sources':
             st.session_state.responses['q6_verification_sources'] = st.text_input(
-                "6.a. Specify alternative verification sources",
+                "6).a. Specify alternative verification sources",
                 help="List the alternative sources used to verify weather inputs."
             )
-        st.markdown("""7. Data sources used for weather inputs (Criticality Scale below)
+        st.markdown("""7). Data sources used for weather inputs (Criticality Scale below)
         
         Criticality Scale:
         - Most Critical – Essential and must be addressed immediately  
@@ -164,52 +164,52 @@ def show_section(section_num):
         - Not Critical – Minimal impact or not relevant  
         """, unsafe_allow_html = True)
         st.session_state.responses['q7_1_rwis'] = st.radio(
-            "7.1 Road Weather Information System (RWIS)/roadside sensors",
+            "7.1) Road Weather Information System (RWIS)/roadside sensors",
             options=criticality_options,
             help="Rate the criticality of RWIS sensors."
         )
         st.session_state.responses['q7_2_vehicle_telematics'] = st.radio(
-            "7.2 Connected vehicle telematics",
+            "7.2) Connected vehicle telematics",
             options=criticality_options,
             help="Rate the criticality of connected vehicle data."
         )
         st.session_state.responses['q7_3_sat_forecasts'] = st.radio(
-            "7.3 Radar/satellite forecasts",
+            "7.3) Radar/satellite forecasts",
             options=criticality_options,
             help="Rate the criticality of radar/satellite forecasts."
         )
         st.session_state.responses['q7_4_thermal_cameras'] = st.radio(
-            "7.4 Thermal/visual cameras",
+            "7.4) Thermal/visual cameras",
             options=criticality_options,
             help="Rate the criticality of thermal/visual cameras."
         )
         st.session_state.responses['q7_5_manual_reports'] = st.radio(
-            "7.5 Manual operator reports",
+            "7.5) Manual operator reports",
             options=criticality_options,
             help="Rate the criticality of manual operator reports."
         )
         st.session_state.responses['q8_control_logic'] = st.radio(
-            "8. Control logic architecture",
+            "8). Control logic architecture",
             options=['Rule-based thresholds (fixed)', 'Dynamic thresholds (real-time adjustments)', 'Machine learning based'],
             help="Select the type of control logic used in your system."
         )
         st.session_state.responses['q9_operation_mode'] = st.radio(
-            "9. Mode of operation",
+            "9). Mode of operation",
             options=['Alert only', 'System-recommended with operator approval', 'Fully automated'],
             help="Select the operational mode that best describes your system."
         )
         st.session_state.responses['q10_deactivation_mode'] = st.radio(
-            "10. Mode of deactivation",
+            "10). Mode of deactivation",
             options=['Manual removal', 'Automated with operator alert', 'Automated without alert'],
             help="Choose how the system is deactivated under normal conditions."
         )
         st.session_state.responses['q11_speed_adjustment'] = st.radio(
-            "11. Speed adjustment protocols",
+            "11). Speed adjustment protocols",
             options=['Fixed increments', 'Dynamic models', 'Operator discretion'],
             help="Select how speed adjustments are determined."
         )
         st.session_state.responses['q12_geo_coverage'] = st.radio(
-            "12. Geographic coverage",
+            "12). Geographic coverage",
             options=['Within 5km of sensor', 'Entire carriageway', 'Overlapping zones'],
             help="Select the geographical coverage of your WRVSL system."
         )
@@ -218,7 +218,7 @@ def show_section(section_num):
     elif section_num == 2:
         st.subheader("Operational Challenges")
 
-        st.markdown("""13. Challenge severity (Criticality Scale below)
+        st.markdown("""13). Challenge severity (Criticality Scale below)
         
         Criticality Scale:
         - Most Critical – Essential and must be addressed immediately  
@@ -228,11 +228,11 @@ def show_section(section_num):
         - Not Critical – Minimal impact or not relevant  
         """)
         challenges = {
-            "13.1 Sensor reliability": "q13_sensor_reliability",
-            "13.2 Driver compliance": "q13_driver_compliance",
-            "13.3 Maintenance costs": "q13_maintenance_costs",
-            "13.4 Inter-agency coordination": "q13_coordination",
-            "13.5 Operational FTE/resources": "q13_fte_challenge"
+            "13.1) Sensor reliability": "q13_sensor_reliability",
+            "13.2) Driver compliance": "q13_driver_compliance",
+            "13.3) Maintenance costs": "q13_maintenance_costs",
+            "13.4) Inter-agency coordination": "q13_coordination",
+            "13.5) Operational FTE/resources": "q13_fte_challenge"
         }
         for label, key in challenges.items():
             st.session_state.responses[key] = st.radio(
@@ -241,7 +241,7 @@ def show_section(section_num):
                 help=f"Rate the severity of {label.split()[1].lower()}."
             )
         st.session_state.responses['q14_mitigation_strategies'] = st.multiselect(
-            "14. Mitigation strategies for non-compliance",
+            "14). Mitigation strategies for non-compliance",
             options=['Public education campaigns', 'Dynamic signage with penalty warnings', 'Automated enforcement', 'None'],
             help="Select all strategies you employ to address non-compliance."
         )
@@ -250,24 +250,24 @@ def show_section(section_num):
     elif section_num == 3:
         st.subheader("Impact Assessment")
         st.session_state.responses['q15_primary_crash_reduction'] = st.slider(
-            "15. Primary crash reduction (%)",
+            "15). Primary crash reduction (%)",
             0, 100, help="Estimate the percentage improvement in safety (primary crash reduction) due to WRVSL."
         )
         st.session_state.responses['q16_secondary_crash_reduction'] = st.slider(
-            "16. Secondary crash reduction (%)",
+            "16). Secondary crash reduction (%)",
             0, 100, help="Estimate the percentage improvement in safety (secondary crash reduction) due to WRVSL."
         )
         st.session_state.responses['q17_safety_source'] = st.radio(
-            "17. Data source for safety improvement",
+            "17). Data source for safety improvement",
             options=['Field', 'Simulation'],
             help="Select whether the safety data is based on field observations or simulation results."
         )
         st.session_state.responses['q18_speed_compliance'] = st.slider(
-            "18. Speed compliance rate (%)",
+            "18). Speed compliance rate (%)",
             0, 100, help="Indicate the observed or expected speed compliance rate."
         )
         st.session_state.responses['q19_speed_source'] = st.radio(
-            "19. Data source for speed compliance",
+            "19). Data source for speed compliance",
             options=['Field', 'Simulation'],
             help="Select whether the speed compliance data is based on field data or simulation."
         )
@@ -276,11 +276,11 @@ def show_section(section_num):
     elif section_num == 4:
         st.subheader("Lessons Learned")
         st.session_state.responses['q20_success_story'] = st.text_area(
-            "20. Success story (Max 200 words)",
+            "20). Success story (Max 200 words)",
             help="Share a success story related to WRVSL implementation. Please keep within 200 words."
         )
         st.session_state.responses['q21_unexpected_challenges'] = st.text_area(
-            "21. Unexpected challenges & resolution (Max 150 words)",
+            "21). Unexpected challenges & resolution (Max 150 words)",
             help="Describe any unforeseen challenges and how they were addressed, keeping within 150 words."
         )
     
@@ -288,28 +288,28 @@ def show_section(section_num):
     elif section_num == 5:
         st.subheader("Policy & Governance")
         st.session_state.responses['q22_regulations'] = st.multiselect(
-            "22. Regulatory frameworks used",
+            "22). Regulatory frameworks used",
             options=['Austroads Guidelines', 'MUTCD Section 4L', 'EU Directive 2021/034', 'Other'],
             help="Select all regulatory frameworks that influence your system."
         )
         if 'Other' in st.session_state.responses.get('q22_regulations', []):
             st.session_state.responses['q22_regulations_other'] = st.text_input(
-                "22.a. Please specify other regulatory frameworks",
+                "22).a. Please specify other regulatory frameworks",
                 help="Enter additional details if other regulatory frameworks apply."
             )
-        st.markdown("**23. Multi-agency collaboration frequency**")
+        st.markdown("**23). Multi-agency collaboration frequency**")
         st.session_state.responses['q23_meteorology'] = st.radio(
-            "23.1 Meteorological department",
+            "23.1) Meteorological department",
             options=['Daily', 'Weekly', 'Monthly', 'Never'],
             help="How often do you collaborate with the meteorological department?"
         )
         st.session_state.responses['q23_law_enforcement'] = st.radio(
-            "23.2 Law enforcement",
+            "23.2) Law enforcement",
             options=['Daily', 'Weekly', 'Monthly', 'Never'],
             help="How frequently is there interaction with law enforcement?"
         )
         st.session_state.responses['q23_road_maintenance'] = st.radio(
-            "23.3 Road maintenance teams",
+            "23.3) Road maintenance teams",
             options=['Daily', 'Weekly', 'Monthly', 'Never'],
             help="Indicate how often you engage with road maintenance teams."
         )
@@ -317,7 +317,7 @@ def show_section(section_num):
     # Section 6: Future Directions
     elif section_num == 6:
         st.subheader("Future Directions")
-        st.markdown("""24. Rank emerging technologies (Ranking Scale below)
+        st.markdown("""24). Rank emerging technologies (Ranking Scale below)
         
         Ranking Scale:  
         • Most Important – Game-changing technology with immediate and significant impact  
@@ -325,22 +325,22 @@ def show_section(section_num):
         • Moderately Important – Has relevance but not a critical focus area  
         • Least Important – Low impact or not a priority at this time""")
         st.session_state.responses['q24_ai_ml'] = st.radio(
-            "24.1 AI/ML prediction models",
+            "24.1) AI/ML prediction models",
             options=emerging_options,
             help="Select the ranking for AI/ML models for predicting weather-related impacts."
         )
         st.session_state.responses['q24_iot_sensors'] = st.radio(
-            "24.2 Satellite-connected IoT sensors",
+            "24.2) Satellite-connected IoT sensors",
             options=emerging_options,
             help="Select the ranking for IoT sensors in your system."
         )
         st.session_state.responses['q24_cv_integration'] = st.radio(
-            "24.3 Connected vehicle integration",
+            "24.3) Connected vehicle integration",
             options=emerging_options,
             help="Select the ranking for connected vehicle data integration."
         )
         st.session_state.responses['q25_research_gaps'] = st.text_area(
-            "25. Research gaps hindering WRVSL advancements (100 words max)",
+            "25). Research gaps hindering WRVSL advancements (100 words max)",
             help="Briefly describe the research gaps that need to be addressed to advance WRVSL technology."
         )
     
@@ -348,13 +348,13 @@ def show_section(section_num):
     elif section_num == 7:
         st.subheader("Optional Demographics")
         st.session_state.responses['q26_follow_up'] = st.radio(
-            "26. Contact for follow-up?",
+            "26). Contact for follow-up?",
             options=['Yes', 'No'],
             help="Indicate if you are willing to be contacted for follow-up questions."
         )
         if st.session_state.responses['q26_follow_up'] == 'Yes':
             st.session_state.responses['q27_email'] = st.text_input(
-                "27. Enter email",
+                "27). Enter email",
                 help="Please provide your email address for further contact."
             )
         with st.expander("Review Your Answers"):
