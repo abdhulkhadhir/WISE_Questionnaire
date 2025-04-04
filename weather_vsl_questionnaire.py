@@ -154,7 +154,7 @@ def show_section(section_num):
                 "6.a. Specify alternative verification sources",
                 help="List the alternative sources used to verify weather inputs."
             )
-        st.markdown("""**7. Data sources used for weather inputs (Criticality Scale below)**  
+        st.write("""**7. Data sources used for weather inputs (Criticality Scale below)**  
         
         **Criticality Scale:**  
         - **Most Critical** – Essential and must be addressed immediately  
