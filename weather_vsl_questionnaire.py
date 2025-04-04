@@ -217,14 +217,16 @@ def show_section(section_num):
     # Section 2: Operational Challenges
     elif section_num == 2:
         st.subheader("Operational Challenges")
-        st.markdown("**13. Challenge severity (Criticality Scale below)**  
+
+        st.markdown("""**13. Challenge severity (Criticality Scale below)**  
         
-Criticality Scale:  
-• Most Critical – Essential and must be addressed immediately  
-• Highly Critical – Very important but not the highest priority  
-• Moderately Critical – Important but not urgent  
-• Slightly Critical – Somewhat important but can be deferred  
-• Not Critical – Minimal impact or not relevant")
+        **Criticality Scale:**  
+        - **Most Critical** – Essential and must be addressed immediately  
+        - **Highly Critical** – Very important but not the highest priority  
+        - **Moderately Critical** – Important but not urgent  
+        - **Slightly Critical** – Somewhat important but can be deferred  
+        - **Not Critical** – Minimal impact or not relevant  
+        """)
         challenges = {
             "13.1 Sensor reliability": "q13_sensor_reliability",
             "13.2 Driver compliance": "q13_driver_compliance",
@@ -315,13 +317,13 @@ Criticality Scale:
     # Section 6: Future Directions
     elif section_num == 6:
         st.subheader("Future Directions")
-        st.markdown("**24. Rank emerging technologies (Ranking Scale below)**  
+        st.markdown("""**24. Rank emerging technologies (Ranking Scale below)**  
         
 Ranking Scale:  
 • Most Important – Game-changing technology with immediate and significant impact  
 • Highly Important – Strong potential for impact but not the top priority  
 • Moderately Important – Has relevance but not a critical focus area  
-• Least Important – Low impact or not a priority at this time")
+• Least Important – Low impact or not a priority at this time""")
         st.session_state.responses['q24_ai_ml'] = st.radio(
             "24.1 AI/ML prediction models",
             options=emerging_options,
