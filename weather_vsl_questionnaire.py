@@ -87,21 +87,20 @@ for i, section in enumerate(SECTIONS):
         if st.sidebar.button(section, key=f"btn_{i}"):
             st.session_state.current_section = i
 
-# ---- Define common radio options for criticality (Questions 7 & 13) ----
+# ---- Define simplified rating options ----
 criticality_options = [
-    "Most Critical – Essential and must be addressed immediately",
-    "Highly Critical – Very important but not the highest priority",
-    "Moderately Critical – Important but not urgent",
-    "Slightly Critical – Somewhat important but can be deferred",
-    "Not Critical – Minimal impact or not relevant"
+    "Most Critical",
+    "Highly Critical",
+    "Moderately Critical",
+    "Slightly Critical",
+    "Not Critical"
 ]
 
-# ---- Define radio options for emerging technologies (Question 21) ----
 emerging_options = [
-    "Most Important – Game-changing technology with immediate and significant impact",
-    "Highly Important – Strong potential for impact but not the top priority",
-    "Moderately Important – Has relevance but not a critical focus area",
-    "Least Important – Low impact or not a priority at this time"
+    "Most Important",
+    "Highly Important",
+    "Moderately Important",
+    "Least Important"
 ]
 
 # ---- Function to Render Sections ----
@@ -155,7 +154,14 @@ def show_section(section_num):
                 "6.a. Specify alternative verification sources",
                 help="List the alternative sources used to verify weather inputs."
             )
-        st.markdown("**7. Data sources used for weather inputs (Criticality)**")
+        st.markdown("**7. Data sources used for weather inputs (Criticality Scale below)**  
+        
+Criticality Scale:  
+• Most Critical – Essential and must be addressed immediately  
+• Highly Critical – Very important but not the highest priority  
+• Moderately Critical – Important but not urgent  
+• Slightly Critical – Somewhat important but can be deferred  
+• Not Critical – Minimal impact or not relevant")
         st.session_state.responses['q7_1_rwis'] = st.radio(
             "7.1 RWIS/roadside sensors",
             options=criticality_options,
@@ -210,13 +216,20 @@ def show_section(section_num):
     # Section 2: Operational Challenges
     elif section_num == 2:
         st.subheader("Operational Challenges")
-        st.markdown("**13. Challenge severity (Criticality)**")
+        st.markdown("**13. Challenge severity (Criticality Scale below)**  
+        
+Criticality Scale:  
+• Most Critical – Essential and must be addressed immediately  
+• Highly Critical – Very important but not the highest priority  
+• Moderately Critical – Important but not urgent  
+• Slightly Critical – Somewhat important but can be deferred  
+• Not Critical – Minimal impact or not relevant")
         challenges = {
-            '13.1 Sensor reliability': 'q13_sensor_reliability',
-            '13.2 Driver compliance': 'q13_driver_compliance',
-            '13.3 Maintenance costs': 'q13_maintenance_costs',
-            '13.4 Inter-agency coordination': 'q13_coordination',
-            '13.5 Operational FTE/resources': 'q13_fte_challenge'
+            "13.1 Sensor reliability": "q13_sensor_reliability",
+            "13.2 Driver compliance": "q13_driver_compliance",
+            "13.3 Maintenance costs": "q13_maintenance_costs",
+            "13.4 Inter-agency coordination": "q13_coordination",
+            "13.5 Operational FTE/resources": "q13_fte_challenge"
         }
         for label, key in challenges.items():
             st.session_state.responses[key] = st.radio(
@@ -301,7 +314,13 @@ def show_section(section_num):
     # Section 6: Future Directions
     elif section_num == 6:
         st.subheader("Future Directions")
-        st.markdown("**24. Rank emerging technologies (Criticality)**")
+        st.markdown("**24. Rank emerging technologies (Ranking Scale below)**  
+        
+Ranking Scale:  
+• Most Important – Game-changing technology with immediate and significant impact  
+• Highly Important – Strong potential for impact but not the top priority  
+• Moderately Important – Has relevance but not a critical focus area  
+• Least Important – Low impact or not a priority at this time")
         st.session_state.responses['q24_ai_ml'] = st.radio(
             "24.1 AI/ML prediction models",
             options=emerging_options,
