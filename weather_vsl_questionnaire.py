@@ -154,15 +154,16 @@ def show_section(section_num):
                 "6.a. Specify alternative verification sources",
                 help="List the alternative sources used to verify weather inputs."
             )
-        st.markdown("""**7. Data sources used for weather inputs (Criticality Scale below)**  
-        
-        ** Criticality Scale: **  
+        st.markdown("**7. Data sources used for weather inputs (Criticality Scale below)**")  
+
+        st.markdown("""  
+        **Criticality Scale:**  
         - **Most Critical** – Essential and must be addressed immediately  
         - **Highly Critical** – Very important but not the highest priority  
         - **Moderately Critical** – Important but not urgent  
         - **Slightly Critical** – Somewhat important but can be deferred  
         - **Not Critical** – Minimal impact or not relevant  
-        """, unsafe_allow_html = True)
+        """)
         st.session_state.responses['q7_1_rwis'] = st.radio(
             "7.1 Road Weather Information System (RWIS)/roadside sensors",
             options=criticality_options,
