@@ -9,7 +9,7 @@ from io import StringIO
 # ---- Streamlit Page Config ----
 st.set_page_config(page_title="Global WRVSL Survey", layout="wide")
 
-# ---- Custom CSS for Enhanced Visual Appeal ----
+# ---- Custom CSS for Enhanced Visual Appeal & Responsive Design ----
 st.markdown("""
     <style>
         body {
@@ -32,6 +32,19 @@ st.markdown("""
         }
         h1, h2, h3, h4 {
             color: #333366;
+        }
+        /* Responsive adjustments */
+        @media only screen and (max-width: 600px) {
+            .main {
+                padding: 1rem;
+                margin: 10px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
         }
     </style>
     """, unsafe_allow_html=True)
@@ -65,7 +78,7 @@ if 'submitted' not in st.session_state:
 
 # ---- Landing Page ----
 if st.session_state.landing:
-    st.title("🌍 Weather Responsive VSL (WRVSL) Global State of Practice Survey ")
+    st.title("🌍 Weather Responsive VSL (WRVSL) Global State of Practice Survey")
     st.markdown("""
         Welcome to the **Global WRVSL Survey**. Our goal is to assess the effectiveness and challenges of Weather Responsive Variable Speed Limit (WRVSL) systems. 
         Your participation is essential in shaping future implementations, policies, and technological advancements in this field.
@@ -156,13 +169,13 @@ def show_section(section_num):
             )
         st.markdown("""7). Data sources used for weather inputs (Criticality Scale below)
         
-        Criticality Scale:
-        - Most Critical – Essential and must be addressed immediately  
-        - Highly Critical – Very important but not the highest priority  
-        - Moderately Critical – Important but not urgent  
-        - Slightly Critical – Somewhat important but can be deferred  
-        - Not Critical – Minimal impact or not relevant  
-        """, unsafe_allow_html = True)
+Criticality Scale:
+- Most Critical – Essential and must be addressed immediately  
+- Highly Critical – Very important but not the highest priority  
+- Moderately Critical – Important but not urgent  
+- Slightly Critical – Somewhat important but can be deferred  
+- Not Critical – Minimal impact or not relevant  
+        """, unsafe_allow_html=True)
         st.session_state.responses['q7_1_rwis'] = st.radio(
             "7.1) Road Weather Information System (RWIS)/roadside sensors",
             options=criticality_options,
@@ -217,16 +230,15 @@ def show_section(section_num):
     # Section 2: Operational Challenges
     elif section_num == 2:
         st.subheader("Operational Challenges")
-
         st.markdown("""13). Challenge severity (Criticality Scale below)
         
-        Criticality Scale:
-        - Most Critical – Essential and must be addressed immediately  
-        - Highly Critical – Very important but not the highest priority  
-        - Moderately Critical – Important but not urgent  
-        - Slightly Critical – Somewhat important but can be deferred  
-        - Not Critical – Minimal impact or not relevant  
-        """)
+Criticality Scale:
+- Most Critical – Essential and must be addressed immediately  
+- Highly Critical – Very important but not the highest priority  
+- Moderately Critical – Important but not urgent  
+- Slightly Critical – Somewhat important but can be deferred  
+- Not Critical – Minimal impact or not relevant  
+        """, unsafe_allow_html=True)
         challenges = {
             "13.1) Sensor reliability": "q13_sensor_reliability",
             "13.2) Driver compliance": "q13_driver_compliance",
@@ -319,11 +331,11 @@ def show_section(section_num):
         st.subheader("Future Directions")
         st.markdown("""24). Rank emerging technologies (Ranking Scale below)
         
-        Ranking Scale:  
-        • Most Important – Game-changing technology with immediate and significant impact  
-        • Highly Important – Strong potential for impact but not the top priority  
-        • Moderately Important – Has relevance but not a critical focus area  
-        • Least Important – Low impact or not a priority at this time""")
+Ranking Scale:  
+• Most Important – Game-changing technology with immediate and significant impact  
+• Highly Important – Strong potential for impact but not the top priority  
+• Moderately Important – Has relevance but not a critical focus area  
+• Least Important – Low impact or not a priority at this time""", unsafe_allow_html=True)
         st.session_state.responses['q24_ai_ml'] = st.radio(
             "24.1) AI/ML prediction models",
             options=emerging_options,
@@ -358,7 +370,9 @@ def show_section(section_num):
                 help="Please provide your email address for further contact."
             )
         with st.expander("Review Your Answers"):
-            st.write(st.session_state.responses)
+            st.markdown("### Summary of Your Responses")
+            for key, value in st.session_state.responses.items():
+                st.markdown(f"**{key}**: {value}")
     
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -402,8 +416,21 @@ with col2:
     if st.session_state.current_section < len(SECTIONS) - 1:
         st.button("Next ➡️", on_click=next_section)
     else:
+        # Instead of immediate submission, open a confirmation modal.
         if st.button("✅ Submit"):
-            df = pd.DataFrame([st.session_state.responses])
-            save_to_github(df)
-            st.success("Responses saved successfully! 🎉")
-            st.session_state.submitted = True
+            # Open a modal dialog for confirmation
+            with st.modal("Confirm Submission"):
+                st.markdown("### Please review your responses below before final submission:")
+                for key, value in st.session_state.responses.items():
+                    st.markdown(f"**{key}**: {value}")
+                st.markdown("---")
+                confirm = st.button("Confirm Submission")
+                cancel = st.button("Cancel Submission")
+                if confirm:
+                    df = pd.DataFrame([st.session_state.responses])
+                    save_to_github(df)
+                    st.success("Responses saved successfully! 🎉")
+                    st.session_state.submitted = True
+                    st.experimental_rerun()  # Refresh page after submission
+                if cancel:
+                    st.info("Submission cancelled. You can review and modify your responses.")
